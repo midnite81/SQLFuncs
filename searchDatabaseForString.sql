@@ -1,16 +1,17 @@
 DELIMITER //
 
-CREATE PROCEDURE `__search2`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(50))
+CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(50))
 	LANGUAGE SQL
 	NOT DETERMINISTIC
 	CONTAINS SQL
-	SQL SECURITY DEFINER
+	SQL SECURITY INVOKER
 	COMMENT ''
 BEGIN
 
 CREATE TEMPORARY TABLE IF NOT EXISTS `search` (
 `id` int(11) NOT NULL AUTO_INCREMENT,
-`table` varchar(1020) NOT NULL,
+`db` varchar(255) NOT NULL,
+`table` varchar(255) NOT NULL,
 `whereClause` varchar(9999) NOT NULL,
 PRIMARY KEY(id)
 );
@@ -23,8 +24,8 @@ CREATE TEMPORARY TABLE IF NOT EXISTS `results` (
 PRIMARY KEY(id)
 );
 
-INSERT INTO search (`table`, whereClause)
-SELECT table_name, 
+INSERT INTO search (`db`, `table`, whereClause)
+SELECT _db, table_name, 
 GROUP_CONCAT(concat('`',column_name,'` LIKE \'',_searchTerm,'\'') SEPARATOR ' or ')
 FROM information_schema.columns
 WHERE data_type in ('char', 'varchar', 'longtext', 'mediumtext', 'text', 'tinytext', 'set', 'int', 'float', 'decimal')
@@ -43,8 +44,8 @@ IF @currentRow <= @totalRows THEN
 	WHERE id = @currentRow;
 	
 	SET @query = 'INSERT INTO results (`table`, `count`) '; 
-	SET @query = concat(@query, ' SELECT \'', @table,  '\', count(*) FROM ', @table, ' WHERE ', @whereClause);
-	SET @getQuery = concat('SELECT * FROM ', @table, ' WHERE ', @whereClause);
+	SET @query = concat(@query, ' SELECT \'', @table,  '\', count(*) FROM ', concat(@db,'.',@table), ' WHERE ', @whereClause);
+	SET @getQuery = concat('SELECT * FROM ', concat(@db,'.',@table), ' WHERE ', @whereClause);
 	
 	PREPARE resultsQuery FROM @query;
 	EXECUTE resultsQuery;
@@ -64,6 +65,6 @@ SELECT * FROM results;
 
 DROP TEMPORARY TABLE results;
 DROP TEMPORARY TABLE search;
-END
+END //
 
 DELIMITER ;
