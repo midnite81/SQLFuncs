@@ -1,3 +1,26 @@
+-- +------------------------------------------------------
+-- + Creates a stored procedure which searches for a string 
+-- + within the Database. 
+-- + 
+-- + Once you have executed the code below, you can simply 
+-- + call the following command to find tables which contain
+-- + the specified search term
+-- + 
+-- + Call `__search`('myDatabase', '%mysearchterm%');
+-- + 
+-- + It is advisable to use %% wildcards either side of 
+-- + of your search term.
+-- + 
+-- + Author: Simon Rogers
+-- + Date: 14th February 2016
+-- + SQL: mysql
+-- +------------------------------------------------------
+
+-- +------------------------------------------------------
+-- + If you need to drop the procedure first run
+-- + DROP PROCEDURE IF EXISTS `__search`; 
+-- +------------------------------------------------------
+
 DELIMITER //
 
 CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(50))
@@ -7,6 +30,9 @@ CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(50))
 	SQL SECURITY INVOKER
 	COMMENT ''
 BEGIN
+
+DROP TEMPORARY TABLE IF EXISTS `search`;
+DROP TEMPORARY TABLE IF EXISTS `results`;
 
 CREATE TEMPORARY TABLE IF NOT EXISTS `search` (
 `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -39,13 +65,13 @@ label1: LOOP
 
 IF @currentRow <= @totalRows THEN
 
-	SELECT `table`, `whereClause` INTO @table, @whereClause 
+	SELECT `db`, `table`, `whereClause` INTO @db, @table, @whereClause 
 	FROM search 
 	WHERE id = @currentRow;
 	
 	SET @query = 'INSERT INTO results (`table`, `count`) '; 
-	SET @query = concat(@query, ' SELECT \'', @table,  '\', count(*) FROM ', concat(@db,'.',@table), ' WHERE ', @whereClause);
-	SET @getQuery = concat('SELECT * FROM ', concat(@db,'.',@table), ' WHERE ', @whereClause);
+	SET @query = concat(@query, ' SELECT \'', @table,  '\', count(*) FROM ', concat('`',@db,'`.`',@table,'`'), ' WHERE ', @whereClause);
+	SET @getQuery = concat('SELECT * FROM ', concat('`',@db,'`.`',@table,'`'), ' WHERE ', @whereClause);
 	
 	PREPARE resultsQuery FROM @query;
 	EXECUTE resultsQuery;
@@ -63,8 +89,8 @@ END LOOP label1;
 SELECT * FROM results;
 
 
-DROP TEMPORARY TABLE results;
-DROP TEMPORARY TABLE search;
+DROP TEMPORARY TABLE `results`;
+DROP TEMPORARY TABLE `search`;
 END //
 
 DELIMITER ;
