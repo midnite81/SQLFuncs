@@ -23,7 +23,9 @@
 
 DELIMITER //
 
-CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(50))
+SET SESSION group_concat_max_len = 1000000;
+
+CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(255))
 	LANGUAGE SQL
 	NOT DETERMINISTIC
 	CONTAINS SQL
