@@ -32,6 +32,13 @@ CREATE PROCEDURE `__search`(IN `_db` VARCHAR(50), IN `_searchTerm` VARCHAR(255))
 	SQL SECURITY INVOKER
 	COMMENT ''
 BEGIN
+-- +------------------------------------------------------
+-- + SP: __search(db, searchTerm)
+-- +------------------------------------------------------
+-- + Author: Simon Rogers
+-- + Date: 14th February 2016
+-- + SQL: mysql
+-- +------------------------------------------------------
 
 DROP TEMPORARY TABLE IF EXISTS `search`;
 DROP TEMPORARY TABLE IF EXISTS `results`;
