@@ -7,6 +7,8 @@
 -- + the specified search term
 -- + 
 -- + Call `__search`('myDatabase', '%mysearchterm%');
+-- + or use the current database by using 
+-- + Call `__search`(database(), '%mysearchterm%');
 -- + 
 -- + It is advisable to use %% wildcards either side of 
 -- + of your search term.
@@ -65,6 +67,9 @@ GROUP_CONCAT(concat('`',column_name,'` LIKE \'',_searchTerm,'\'') SEPARATOR ' or
 FROM information_schema.columns
 WHERE data_type in ('char', 'varchar', 'longtext', 'mediumtext', 'text', 'tinytext', 'set', 'int', 'float', 'decimal')
 and table_schema = _db
+AND table_name NOT IN (SELECT table_name
+		       FROM information_schema.views
+		       WHERE table_schema = _db)
 GROUP BY table_name;
 
 SELECT count(id) INTO @totalRows FROM search;
