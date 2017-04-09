@@ -9,7 +9,7 @@ SELECT 'SET FOREIGN_KEY_CHECKS = 0;' as `SQL`
 
 UNION ALL 
 
-SELECT concat('DELETE TABLE `', TABLE_NAME, '`;') as `SQL` 
+SELECT concat('DROP TABLE `', TABLE_NAME, '`;') as `SQL` 
 FROM information_schema.tables
 WHERE TABLE_SCHEMA = database()
 
